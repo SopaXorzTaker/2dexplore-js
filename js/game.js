@@ -1,0 +1,165 @@
+const WORLD_X = 64; // tiles
+const WORLD_Y = 64;
+
+const TILE_SIZE = 32; // px
+
+var world;
+var worldRenderer;
+var canvas;
+
+var currentTile = 0;
+
+function newWorld(){
+	world = new World(WORLD_X, WORLD_Y, tileList, populate);
+	world.player.setTexture("player");
+	world.player.setX(0);
+	world.player.setY(0);
+
+	worldRenderer = new WorldRenderer(world, canvas, tileList, entityTextures, TILE_SIZE);
+}
+
+function populate(){
+	for (var x = 0; x < this.getTiles().width; x++){
+		for (var y = 0; y < this.getTiles().height; y++){
+			 if (y == 8){
+				this.getTiles().setTile(x, y, TILE_GRASS);
+			} else if (y > 7){
+				this.getTiles().setTile(x, y, Math.random()>0.5?TILE_DIRT:TILE_STONE);
+			}
+		}
+	}
+}
+
+function initGame(){
+	newWorld();
+	
+	setInterval(function(){render();}, 1000.0/30.0); // 30 FPS
+	setInterval(function(){world.tick();}, 1000.0/5.0); // ticks 20 times per second
+}
+
+function checkBounds(x, min, max){
+	return ((x >= min) && (x < max));
+}
+
+function move(direction){
+	var player = world.getPlayer();
+	var x = player.getX();
+	var y = player.getY();
+	
+	var tileUnderX = Math.floor(x/TILE_SIZE);
+	var tileUnderY = Math.floor(y/TILE_SIZE) + 1;
+	var tileUnder = world.checkBounds(tileUnderX, tileUnderY)?world.getTiles().getTile(tileUnderX, tileUnderY):null;
+	
+	player.setFacing(direction);
+	
+	switch(direction){
+		case 0:
+			y -= TILE_SIZE;
+			break;
+		case 1:
+			player.setTexture("player_flipped");
+			x -= TILE_SIZE;
+			break;
+		case 2:
+			y += TILE_SIZE;
+			break;
+		case 3:
+			player.setTexture("player");
+			x += TILE_SIZE;
+			break;
+	}
+	
+	if (world.checkBounds(Math.floor(x/TILE_SIZE), Math.floor(y/TILE_SIZE))) {
+		var tile = world.getTiles().getTile(Math.floor(x/TILE_SIZE), Math.floor(y/TILE_SIZE));
+		if (!(tileList.getTile(tile).getOpaque())){
+			if ((direction == 0 && tileUnder != null && tileList.getTile(tileUnder).getOpaque()) || direction != 0){
+				player.setX(x);
+				player.setY(y);
+			}
+		}
+		
+		if (y < worldRenderer.getViewportY()){
+			worldRenderer.setViewportY(y);
+		} else if (y >= (worldRenderer.getViewportY() + canvas.height)) {
+			worldRenderer.setViewportY(worldRenderer.getViewportY() + (y - worldRenderer.getViewportY()));
+		}
+		
+		if (x < worldRenderer.getViewportX()){
+			worldRenderer.setViewportX(x);
+		} else if (x >= (worldRenderer.getViewportX() + canvas.width)) {
+			worldRenderer.setViewportX(worldRenderer.getViewportX() + (x - worldRenderer.getViewportX()));
+		}
+	}
+}
+
+function drawDebug(){
+	var ctx = canvas.getContext("2d");
+	ctx.fillStyle = "#000000";
+	ctx.fillRect(0, 0, canvas.width, 24);
+	ctx.fillStyle = "#ffffff";
+	ctx.font = "14px Tahoma";
+	ctx.fillText("Current Tile: " + tileList.getTile(currentTile).getName() + " Viewport: " +
+		worldRenderer.getViewportX() + ", " + worldRenderer.getViewportY() + " Player position: " + world.player.getX() + ", " + world.player.getY(), 0, 16);
+}
+
+function render(){
+	worldRenderer.redraw(); // draw the map
+	drawDebug();
+}
+
+function keydown(evt){
+	switch(evt.which){
+		case 87: // W
+			move(0);
+			break;
+		case 65: // A
+			move(1);
+			break;
+		case 83: // S
+			move(2);
+			break;
+		case 68: // D
+			move(3);
+			break;
+		case 88:
+			currentTile--;
+			currentTile = currentTile>=0?currentTile:tileList.length()-1;
+			break;
+		case 90:
+			currentTile = (currentTile + 1) % tileList.length();
+			break;
+		case 81:
+			newWorld();
+			break;
+			
+	}
+}
+
+function click(evt){
+	var rect = canvas.getBoundingClientRect();
+	var x = evt.clientX - rect.left;
+	var y = evt.clientY - rect.top;
+	
+	var tileX = Math.floor((worldRenderer.getViewportX() + x) / TILE_SIZE);
+	var tileY = Math.floor((worldRenderer.getViewportY() + y) / TILE_SIZE);
+	
+	switch(evt.which){
+		case 1:
+			if (world.getTiles().getTile(tileX, tileY) == 0){
+				world.getTiles().setTile(tileX, tileY, currentTile);
+			}
+			break;
+		case 3:
+			world.getTiles().setTile(tileX, tileY, 0);
+			break;
+	}
+	evt.preventDefault(); // context-menu handler destroys the fun stuff
+	//return false;
+}
+
+function load(){
+	canvas = document.getElementById("gameCanvas");
+	document.body.addEventListener("keydown", keydown);
+	canvas.addEventListener("mousedown", click);
+	initGame();
+}
