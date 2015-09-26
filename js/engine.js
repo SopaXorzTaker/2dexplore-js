@@ -27,8 +27,6 @@ Entity.prototype.getWorld = function(){
 };
 
 
-//TODO: Replace '32' with a proper constant.
-
 GenericEntity = function(world){
 	Entity.call(this, world);
 	this.facing = 0;
@@ -38,13 +36,14 @@ GenericEntity.prototype = new Entity();
 GenericEntity.prototype.tick = function(){
 	var x = this.x;
 	var y = this.y;
-	var tileX = Math.floor(x / 32);
-	var tileY = Math.floor(y / 32);
+	var textureSize = this.world.getTileList().getTextureSize();
+	var tileX = Math.floor(x / textureSize);
+	var tileY = Math.floor(y / textureSize);
 	tileY++; // tile underneath 
 	if (this.world.checkBounds(tileX, tileY)){
 		var tileUnder = this.world.getTileList().getTile(this.world.getTiles().getTile(tileX, tileY));
 		if (!tileUnder.getOpaque()){
-			this.y += 32;
+			this.y += textureSize;
 		}
 	}
 };
@@ -134,14 +133,14 @@ World.prototype.checkBounds = function(x, y){
 
 
 
-WorldRenderer = function(world, canvas, tileList, entityTextures, textureSize){
-	this.textureSize = textureSize;
+WorldRenderer = function(world, canvas, tileList, entityTextures){
 	this.world = world;
 	this.canvas = canvas;
 	this.tileList = tileList;
 	this.viewportX = 0;
 	this.viewportY = 0;
 	this.entityTextures = entityTextures;
+	this.textureSize = tileList.getTextureSize();
 };
 
 	
@@ -208,8 +207,9 @@ Tile.prototype.getOpaque = function(){
 	return this.isOpaque;
 };
 
-TileList = function(){
+TileList = function(textureSize){
 	this.tiles = [];
+	this.textureSize = textureSize;
 };
 
 TileList.prototype.registerTile = function(tile){
@@ -223,4 +223,8 @@ TileList.prototype.getTile = function(tileId){
 	
 TileList.prototype.length = function(){
 	return this.tiles.length;
+};
+
+TileList.prototype.getTextureSize = function(){
+	return this.textureSize;
 };
