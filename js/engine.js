@@ -63,17 +63,16 @@ GenericEntity.prototype.setTexture = function (textureName){
 PlayerEntity = function(world){
 	GenericEntity.call(this, world);
 	this.facing = 0;
-	this.fallDelay = 0;
 	this.textureFlipped = false;
 };
 
 PlayerEntity.prototype = new GenericEntity();
 
 
-TileMap = function(width, height){
+TileMap = function(width, height, tiles){
 	this.width = width;
 	this.height = height;
-	this.tiles = new Int8Array(width*height);
+	this.tiles = tiles != null?tiles:new Int8Array(width*height);
 };
 
 TileMap.prototype.getTile = function(x, y){
@@ -90,6 +89,10 @@ TileMap.prototype.getWidth = function(){
 
 TileMap.prototype.getHeight = function(){
 	return this.height;
+};
+
+TileMap.prototype.getArray = function(){
+	return this.tiles;
 };
 
 World = function(width, height, tileList, populate, tileMap, entities){
