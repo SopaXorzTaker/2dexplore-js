@@ -1,6 +1,8 @@
 2DExplore - JS
 ==============
 
+[try me!](https://SopaXorzTaker.github.io/2dexplore-js)
+
 This is a port of a sandbox game 2DExplore in HTML5.
 See: [2dexplore](https://github.com/SopaXorzTaker/2dexplore)
 
