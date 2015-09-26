@@ -90,7 +90,7 @@ function scrollMap(){
 		worldRenderer.setViewportY((worldRenderer.getViewportY() + (y - worldRenderer.getViewportY())) - (2 * TEXTURE_SIZE));
 	}
 	
-	if (x < (worldRenderer.getViewportX() - TEXTURE_SIZE)){
+	if (x < worldRenderer.getViewportX()){
 		worldRenderer.setViewportX(x);
 	} else if (x >= (worldRenderer.getViewportX() + canvas.width - TEXTURE_SIZE)) {
 		worldRenderer.setViewportX(worldRenderer.getViewportX() + (x - worldRenderer.getViewportX()));
