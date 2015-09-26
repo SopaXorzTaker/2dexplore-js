@@ -1,8 +1,6 @@
 const WORLD_X = 64; // tiles
 const WORLD_Y = 64;
 
-const TILE_SIZE = 32; // px
-
 var world;
 var worldRenderer;
 var canvas;
@@ -15,7 +13,7 @@ function newWorld(){
 	world.player.setX(0);
 	world.player.setY(0);
 
-	worldRenderer = new WorldRenderer(world, canvas, tileList, entityTextures, TILE_SIZE);
+	worldRenderer = new WorldRenderer(world, canvas, tileList, entityTextures, TEXTURE_SIZE);
 }
 
 function populate(){
@@ -34,7 +32,7 @@ function initGame(){
 	newWorld();
 	
 	setInterval(function(){render();}, 1000.0/30.0); // 30 FPS
-	setInterval(function(){world.tick();}, 1000.0/5.0); // ticks 20 times per second
+	setInterval(function(){tick();}, 1000.0/5.0); // ticks 20 times per second
 }
 
 function checkBounds(x, min, max){
@@ -46,50 +44,62 @@ function move(direction){
 	var x = player.getX();
 	var y = player.getY();
 	
-	var tileUnderX = Math.floor(x/TILE_SIZE);
-	var tileUnderY = Math.floor(y/TILE_SIZE) + 1;
+	var tileUnderX = Math.floor(x/TEXTURE_SIZE);
+	var tileUnderY = Math.floor(y/TEXTURE_SIZE) + 1;
 	var tileUnder = world.checkBounds(tileUnderX, tileUnderY)?world.getTiles().getTile(tileUnderX, tileUnderY):null;
 	
 	player.setFacing(direction);
 	
 	switch(direction){
 		case 0:
-			y -= TILE_SIZE;
+			y -= TEXTURE_SIZE;
 			break;
 		case 1:
 			player.setTexture("player_flipped");
-			x -= TILE_SIZE;
+			x -= TEXTURE_SIZE;
 			break;
 		case 2:
-			y += TILE_SIZE;
+			y += TEXTURE_SIZE;
 			break;
 		case 3:
 			player.setTexture("player");
-			x += TILE_SIZE;
+			x += TEXTURE_SIZE;
 			break;
 	}
 	
-	if (world.checkBounds(Math.floor(x/TILE_SIZE), Math.floor(y/TILE_SIZE))) {
-		var tile = world.getTiles().getTile(Math.floor(x/TILE_SIZE), Math.floor(y/TILE_SIZE));
+	if (world.checkBounds(Math.floor(x/TEXTURE_SIZE), Math.floor(y/TEXTURE_SIZE))) {
+		var tile = world.getTiles().getTile(Math.floor(x/TEXTURE_SIZE), Math.floor(y/TEXTURE_SIZE));
 		if (!(tileList.getTile(tile).getOpaque())){
 			if ((direction == 0 && tileUnder != null && tileList.getTile(tileUnder).getOpaque()) || direction != 0){
 				player.setX(x);
 				player.setY(y);
 			}
 		}
-		
-		if (y < worldRenderer.getViewportY()){
-			worldRenderer.setViewportY(y);
-		} else if (y >= (worldRenderer.getViewportY() + canvas.height)) {
-			worldRenderer.setViewportY(worldRenderer.getViewportY() + (y - worldRenderer.getViewportY()));
-		}
-		
-		if (x < worldRenderer.getViewportX()){
-			worldRenderer.setViewportX(x);
-		} else if (x >= (worldRenderer.getViewportX() + canvas.width)) {
-			worldRenderer.setViewportX(worldRenderer.getViewportX() + (x - worldRenderer.getViewportX()));
-		}
+		scrollMap();
 	}
+}
+
+function scrollMap(){
+	var player = world.getPlayer();
+	var x = player.getX();
+	var y = player.getY();
+	
+	if (y <= worldRenderer.getViewportY()){
+		worldRenderer.setViewportY(y - (2 * TEXTURE_SIZE));
+	} else if (y >= (worldRenderer.getViewportY() + canvas.height - TEXTURE_SIZE)) {
+		worldRenderer.setViewportY((worldRenderer.getViewportY() + (y - worldRenderer.getViewportY())) - (2 * TEXTURE_SIZE));
+	}
+	
+	if (x < (worldRenderer.getViewportX() - TEXTURE_SIZE)){
+		worldRenderer.setViewportX(x);
+	} else if (x >= (worldRenderer.getViewportX() + canvas.width - TEXTURE_SIZE)) {
+		worldRenderer.setViewportX(worldRenderer.getViewportX() + (x - worldRenderer.getViewportX()));
+	}
+}
+
+function tick(){
+	world.tick();
+	scrollMap();
 }
 
 function drawDebug(){
@@ -140,8 +150,8 @@ function click(evt){
 	var x = evt.clientX - rect.left;
 	var y = evt.clientY - rect.top;
 	
-	var tileX = Math.floor((worldRenderer.getViewportX() + x) / TILE_SIZE);
-	var tileY = Math.floor((worldRenderer.getViewportY() + y) / TILE_SIZE);
+	var tileX = Math.floor((worldRenderer.getViewportX() + x) / TEXTURE_SIZE);
+	var tileY = Math.floor((worldRenderer.getViewportY() + y) / TEXTURE_SIZE);
 	
 	switch(evt.which){
 		case 1:
