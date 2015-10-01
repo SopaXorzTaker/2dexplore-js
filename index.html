@@ -13,9 +13,9 @@
 	<script type="text/javascript" src="js/game.js"></script>
 </head>
 
-<body onload="load()">
+<body onload="onLoad()" onbeforeunload="beforeUnload()">
 	<div class="container">
-		<canvas id="gameCanvas" width="640" height="480" oncontextmenu="return false;">
+		<canvas id="gameCanvas" width="640" height="480">
 			Your browser doesn't support the canvas element.
 		</canvas>
 		<br><br><br><br>

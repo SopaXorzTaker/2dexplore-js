@@ -5,6 +5,8 @@ var world;
 var worldRenderer;
 var canvas;
 
+var hasStorage = (window.localStorage !== null)
+
 var currentTile = 0;
 
 function newWorld(){
@@ -29,8 +31,6 @@ function populate(){
 }
 
 function initGame(){
-	newWorld();
-	
 	setInterval(function(){render();}, 1000.0/30.0); // 30 FPS
 	setInterval(function(){tick();}, 1000.0/5.0); // ticks 20 times per second
 }
@@ -102,6 +102,48 @@ function tick(){
 	scrollMap();
 }
 
+function save(){
+	if (hasStorage){
+		var player = world.getPlayer();
+		var tiles = world.getTiles();
+		
+		var obj = {
+			"playerPos": [player.x, player.y],
+			"tiles": {
+					"tiles": Array.from(tiles.getArray()),
+					"width": tiles.getWidth(),
+					"height": tiles.getHeight()
+			}
+		};
+		
+		localStorage.setItem("save", JSON.stringify(obj))
+		
+	}
+	
+}
+
+function load(){
+	if (hasStorage){
+			var json = localStorage.getItem("save");
+			if (json) {
+				var obj = JSON.parse(json);
+				var oldTiles = obj["tiles"];
+				var tileMap = new TileMap(oldTiles["width"], oldTiles["height"], Int8Array.from(oldTiles["tiles"]));
+				var playerX = obj["playerPos"][0];
+				var playerY = obj["playerPos"][1];
+				world = new World(WORLD_X, WORLD_Y, tileList, null, tileMap);
+				world.player.setTexture("player");
+				world.player.setX(playerX);
+				world.player.setY(playerY);
+				worldRenderer = new WorldRenderer(world, canvas, tileList, entityTextures, TEXTURE_SIZE);
+			}
+	}
+}
+
+function hasSavedGame(){
+	return hasStorage && (localStorage.getItem("save") != null);
+}
+
 function drawDebug(){
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "#000000";
@@ -167,9 +209,19 @@ function click(evt){
 	//return false;
 }
 
-function load(){
+function onLoad(){
 	canvas = document.getElementById("gameCanvas");
 	document.body.addEventListener("keydown", keydown);
 	canvas.addEventListener("mousedown", click);
+	canvas.addEventListener("contextmenu", function(evt){evt.preventDefault();});
 	initGame();
+	if (!hasSavedGame()){
+		newWorld();
+	} else {
+		load();
+	}
+}
+
+function beforeUnload(){
+	save();
 }

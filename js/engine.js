@@ -96,14 +96,15 @@ TileMap.prototype.getArray = function(){
 };
 
 World = function(width, height, tileList, populate, tileMap, entities){
-	this.player = new PlayerEntity(this);
-	this.tileMap = new TileMap(width, height);
+	this.player = entities?entities[0]:new PlayerEntity(this);
+	this.tileMap = tileMap != null?tileMap:new TileMap(width, height);
 	this.entities = entities || [];
 	this.tileList = tileList;
-
-	populate.call(this);
-	
-	this.entities.push(this.player);
+	this.populate = populate;
+	if (populate) populate.call(this);
+	if (!entities){
+		this.entities.push(this.player);
+	};
 };
 
 
@@ -132,6 +133,10 @@ World.prototype.getTileList = function(){
 World.prototype.checkBounds = function(x, y){
 	var tileMap = this.getTiles();
 	return ((0 <= x) && (x < tileMap.getWidth()) && (0 <= y) && (y < tileMap.getHeight()));
+};
+
+World.prototype.repopulate = function(){
+	this.populate.call(this);
 };
 
 
