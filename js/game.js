@@ -214,6 +214,7 @@ function onLoad(){
 	document.body.addEventListener("keydown", keydown);
 	canvas.addEventListener("mousedown", click);
 	canvas.addEventListener("contextmenu", function(evt){evt.preventDefault();});
+	window.onbeforeunload = beforeUnload;
 	initGame();
 	if (!hasSavedGame()){
 		newWorld();
