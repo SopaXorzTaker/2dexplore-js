@@ -39,7 +39,12 @@ function checkBounds(x, min, max){
 	return ((x >= min) && (x < max));
 }
 
+function isInZone(x, y, x1, y1, width, height) {
+	return (x >= x1) && (x < (x1 + width)) && (y >= y1) && (y < (y1 + height));
+}
+
 function move(direction){
+	console.log(direction);
 	var player = world.getPlayer();
 	var x = player.getX();
 	var y = player.getY();
@@ -55,11 +60,11 @@ function move(direction){
 			y -= TEXTURE_SIZE;
 			break;
 		case 1:
-			player.setTexture("player_flipped");
 			x -= TEXTURE_SIZE;
 			break;
 		case 2:
-			y += TEXTURE_SIZE;
+			player.setTexture("player_flipped");
+			x -= TEXTURE_SIZE;
 			break;
 		case 3:
 			player.setTexture("player");
@@ -159,62 +164,59 @@ function render(){
 	drawDebug();
 }
 
-function keydown(evt){
-	switch(evt.which){
-		case 87: // W
-			move(0);
-			break;
-		case 65: // A
-			move(1);
-			break;
-		case 83: // S
-			move(2);
-			break;
-		case 68: // D
-			move(3);
-			break;
-		case 88:
-			currentTile--;
-			currentTile = currentTile>=0?currentTile:tileList.length()-1;
-			break;
-		case 90:
-			currentTile = (currentTile + 1) % tileList.length();
-			break;
-		case 81:
-			newWorld();
-			break;
-			
-	}
-}
 
 function click(evt){
 	var rect = canvas.getBoundingClientRect();
 	var x = evt.clientX - rect.left;
 	var y = evt.clientY - rect.top;
+	console.log(x, y);
+	if (isInZone(x, y, 0, 0, 32, 32)){
+		newWorld();
+	} else if (isInZone(x, y, canvas.width-32, canvas.height-32, 32, 32)){
+		currentTile = (currentTile + 1) % tileList.length();
+	} else if (isInZone(x, y, canvas.width/2-50, 0, 50, 50)) {
+		move(0);
+	} else if (isInZone(x, y, canvas.width/2-50, canvas.height-50, 50, 50)) {
+		move(1);
+	} else if (isInZone(x, y, 0, canvas.height/2-150, 150, 150)) {
+		move(2);
+	} else if (isInZone(x, y, canvas.width-150, canvas.height/2-150, 150, 150)) {
+		move(3);
+	} else {
 	
+		var tileX = Math.floor((worldRenderer.getViewportX() + x) / TEXTURE_SIZE);
+		var tileY = Math.floor((worldRenderer.getViewportY() + y) / TEXTURE_SIZE);
+		if (world.getTiles().getTile(tileX, tileY) == 0){
+			world.getTiles().setTile(tileX, tileY, currentTile);
+		}
+	}
+	evt.preventDefault();
+}
+
+function doubleClick(){
+	var rect = canvas.getBoundingClientRect();
+	var x = evt.clientX - rect.left;
+	var y = evt.clientY - rect.top;
 	var tileX = Math.floor((worldRenderer.getViewportX() + x) / TEXTURE_SIZE);
 	var tileY = Math.floor((worldRenderer.getViewportY() + y) / TEXTURE_SIZE);
-	
-	switch(evt.which){
-		case 1:
-			if (world.getTiles().getTile(tileX, tileY) == 0){
-				world.getTiles().setTile(tileX, tileY, currentTile);
-			}
-			break;
-		case 3:
-			world.getTiles().setTile(tileX, tileY, 0);
-			break;
+	if (world.getTiles().getTile(tileX, tileY) == 0){
+		world.getTiles().setTile(tileX, tileY, currentTile);
 	}
-	evt.preventDefault(); // context-menu handler destroys the fun stuff
-	//return false;
+}
+
+function resize(){
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
 }
 
 function onLoad(){
 	canvas = document.getElementById("gameCanvas");
-	document.body.addEventListener("keydown", keydown);
+	resize();
+	
 	canvas.addEventListener("mousedown", click);
 	canvas.addEventListener("contextmenu", function(evt){evt.preventDefault();});
 	window.onbeforeunload = beforeUnload;
+	window.onresize = resize;
 	initGame();
 	if (!hasSavedGame()){
 		newWorld();
