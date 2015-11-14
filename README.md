@@ -18,4 +18,4 @@ Right-clicking a tile will clean it.
 Credits
 -------
 
-The game is written by SopaXorzTaker, textures are Copyright © 2015 Viktor Ahlstrom. (See copyright)[https://github.com/SopaXorzTaker/2dexplore-js/blob/master/textures/COPYRIGHT]
+The game is written by SopaXorzTaker, textures are Copyright © 2015 Viktor Ahlstrom. [See copyright](https://github.com/SopaXorzTaker/2dexplore-js/blob/master/textures/COPYRIGHT)
