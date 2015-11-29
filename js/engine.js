@@ -107,11 +107,49 @@ World = function(width, height, tileList, populate, tileMap, entities){
 	};
 };
 
+World.prototype.fillLiquid = function(x, y, type) {
+	var y2 = y+1;
+	var end = false;
+	var tileUnder;
+
+	tiles = this.getTiles();
+	
+	while (!end) {
+		tileUnder = this.checkBounds(x, y2)?tiles.getTile(x, y2):null;
+		if (tileUnder == TILE_AIR){
+			tiles.setTile(x, y2, type);
+			y2++;
+		} else if ((tileUnder != null) && (!this.getTileList().getTile(tileUnder).getLiquid())) {
+			end = true;
+			if (this.checkBounds(x-1, y2-1) && this.checkBounds(x+1, y2-1)){
+				tiles.setTile(x-1, y2-1, type+1);
+				tiles.setTile(x+1, y2-1, type+1);
+			}
+		}
+	}
+}
+
 
 World.prototype.tick = function(){
+	tiles = this.getTiles();
+
 	this.entities.forEach(function(entity, i, array){
 		entity.tick();
 	});
+
+	var end = false;
+
+	for (var x = 0; x < tiles.getWidth(); x++) {
+		for (var y = 0; y < tiles.getHeight(); y++) {
+			if (!end) {
+				tileId = tiles.getTile(x, y);
+				if (this.getTileList().getTile(tileId).getLiquid()){
+						this.fillLiquid(x, y, tileId);
+						end = true;
+				}
+			}
+		}
+	}
 };
 	
 World.prototype.getTiles = function(){
@@ -129,7 +167,8 @@ World.prototype.getPlayer = function(){
 World.prototype.getTileList = function(){
 	return this.tileList;
 };
-	
+
+// TODO: move to TileMap
 World.prototype.checkBounds = function(x, y){
 	var tileMap = this.getTiles();
 	return ((0 <= x) && (x < tileMap.getWidth()) && (0 <= y) && (y < tileMap.getHeight()));
@@ -197,10 +236,11 @@ WorldRenderer.prototype.redraw = function(){
 	}, this);
 };
 
-Tile = function(name, texture, isOpaque){
+Tile = function(name, texture, isOpaque, isLiquid){
 	this.name = name;
 	this.texture = texture;
-	this.isOpaque = isOpaque == null?true:isOpaque;
+	this.isOpaque = isOpaque!=null?isOpaque:true;
+	this.isLiquid = isLiquid!=null?isLiquid:false;
 };
 
 Tile.prototype.getName = function(){
@@ -213,6 +253,10 @@ Tile.prototype.getTexture = function(){
 	
 Tile.prototype.getOpaque = function(){
 	return this.isOpaque;
+};
+
+Tile.prototype.getLiquid  = function(){
+	return this.isLiquid;
 };
 
 TileList = function(textureSize){
