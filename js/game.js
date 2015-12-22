@@ -46,7 +46,7 @@ function move(direction){
 	
 	var tileUnderX = Math.floor(x/TEXTURE_SIZE);
 	var tileUnderY = Math.floor(y/TEXTURE_SIZE) + 1;
-	var tileUnder = world.checkBounds(tileUnderX, tileUnderY)?world.getTiles().getTile(tileUnderX, tileUnderY):null;
+	var tileUnder = world.getTiles().checkBounds(tileUnderX, tileUnderY)?world.getTiles().getTile(tileUnderX, tileUnderY):null;
 	
 	player.setFacing(direction);
 	
@@ -67,7 +67,7 @@ function move(direction){
 			break;
 	}
 	
-	if (world.checkBounds(Math.floor(x/TEXTURE_SIZE), Math.floor(y/TEXTURE_SIZE))) {
+	if (world.getTiles().checkBounds(Math.floor(x/TEXTURE_SIZE), Math.floor(y/TEXTURE_SIZE))) {
 		var tile = world.getTiles().getTile(Math.floor(x/TEXTURE_SIZE), Math.floor(y/TEXTURE_SIZE));
 		if (!(tileList.getTile(tile).getOpaque())){
 			if ((direction == 0 && tileUnder != null && tileList.getTile(tileUnder).getOpaque()) || direction != 0){

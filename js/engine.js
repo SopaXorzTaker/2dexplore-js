@@ -40,7 +40,7 @@ GenericEntity.prototype.tick = function(){
 	var tileX = Math.floor(x / textureSize);
 	var tileY = Math.floor(y / textureSize);
 	tileY++; // tile underneath 
-	if (this.world.checkBounds(tileX, tileY)){
+	if (this.world.getTiles().checkBounds(tileX, tileY)){
 		var tileUnder = this.world.getTileList().getTile(this.world.getTiles().getTile(tileX, tileY));
 		if (!tileUnder.getOpaque()){
 			this.y += textureSize;
@@ -91,6 +91,10 @@ TileMap.prototype.getHeight = function(){
 	return this.height;
 };
 
+TileMap.prototype.checkBounds = function(x, y){
+	return ((0 <= x) && (x < this.getWidth()) && (0 <= y) && (y < this.getHeight()));
+};
+
 TileMap.prototype.getArray = function(){
 	return this.tiles;
 };
@@ -108,45 +112,41 @@ World = function(width, height, tileList, populate, tileMap, entities){
 };
 
 World.prototype.fillLiquid = function(x, y, type) {
-	var y2 = y+1;
-	var end = false;
-	var tileUnder;
+	var tiles = this.getTiles();
+	var currentTile;
 
-	tiles = this.getTiles();
-	
-	while (!end) {
-		tileUnder = this.checkBounds(x, y2)?tiles.getTile(x, y2):null;
-		if (tileUnder == TILE_AIR){
-			tiles.setTile(x, y2, type);
-			y2++;
-		} else if ((tileUnder != null) && (!this.getTileList().getTile(tileUnder).getLiquid())) {
-			end = true;
-			if (this.checkBounds(x-1, y2-1) && this.checkBounds(x+1, y2-1)){
-				tiles.setTile(x-1, y2-1, type+1);
-				tiles.setTile(x+1, y2-1, type+1);
+	var flow = this.getTileList().getTile(type).getFlowing();
+
+	if (flow) {
+		tiles.setTile(x, y, type+1);
+		for (x2 = x-1; x2 < x+2; x2++) {
+			for (y2 = y; y2 < y+2; y2++) {
+				if (tiles.checkBounds(x2, y2) && !this.getTileList().getTile(tiles.getTile(x2, y2)).getOpaque()) {
+					tiles.setTile(x2, y2, type);
+				}
 			}
+		}
+	} else {
+		if (tiles.checkBounds(x, y+1) && !this.getTileList().getTile(tiles.getTile(x, y+1)).getOpaque()) {
+			tiles.setTile(x, y+1, type-1);
 		}
 	}
 }
 
 
 World.prototype.tick = function(){
-	tiles = this.getTiles();
+	var tiles = this.getTiles();
 
 	this.entities.forEach(function(entity, i, array){
 		entity.tick();
 	});
 
-	var end = false;
 
 	for (var x = 0; x < tiles.getWidth(); x++) {
 		for (var y = 0; y < tiles.getHeight(); y++) {
-			if (!end) {
-				tileId = tiles.getTile(x, y);
-				if (this.getTileList().getTile(tileId).getLiquid()){
-						this.fillLiquid(x, y, tileId);
-						end = true;
-				}
+			tileId = tiles.getTile(x, y);
+			if (this.getTileList().getTile(tileId).getLiquid()) {
+					this.fillLiquid(x, y, tileId);
 			}
 		}
 	}
@@ -166,12 +166,6 @@ World.prototype.getPlayer = function(){
 	
 World.prototype.getTileList = function(){
 	return this.tileList;
-};
-
-// TODO: move to TileMap
-World.prototype.checkBounds = function(x, y){
-	var tileMap = this.getTiles();
-	return ((0 <= x) && (x < tileMap.getWidth()) && (0 <= y) && (y < tileMap.getHeight()));
 };
 
 World.prototype.repopulate = function(){
@@ -221,7 +215,7 @@ WorldRenderer.prototype.redraw = function(){
 	ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	for (var x = areaX; x < areaEndX; x++){
 		for (var y = areaY; y < areaEndY; y++){
-			if ((0 <= x) && (x < tileMap.width) && (0 <= y) && (y < tileMap.width)){
+			if (tileMap.checkBounds(x, y)) {
 				var tileId = tileMap.getTile(x, y);
 				var texture = this.tileList.getTile(tileId).getTexture();
 				ctx.drawImage(texture, x*this.textureSize - this.viewportX, y*this.textureSize - this.viewportY);
@@ -236,11 +230,12 @@ WorldRenderer.prototype.redraw = function(){
 	}, this);
 };
 
-Tile = function(name, texture, isOpaque, isLiquid){
+Tile = function(name, texture, isOpaque, isLiquid, liquidFlowing){
 	this.name = name;
 	this.texture = texture;
 	this.isOpaque = isOpaque!=null?isOpaque:true;
 	this.isLiquid = isLiquid!=null?isLiquid:false;
+	this.liquidFlowing = liquidFlowing!=null?liquidFlowing:false;
 };
 
 Tile.prototype.getName = function(){
@@ -255,8 +250,12 @@ Tile.prototype.getOpaque = function(){
 	return this.isOpaque;
 };
 
-Tile.prototype.getLiquid  = function(){
+Tile.prototype.getLiquid = function(){
 	return this.isLiquid;
+};
+
+Tile.prototype.getFlowing = function(){
+	return this.liquidFlowing;
 };
 
 TileList = function(textureSize){

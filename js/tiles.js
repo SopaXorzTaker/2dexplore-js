@@ -17,8 +17,8 @@ tileList.registerTile(new Tile("dirt", tileTextures["dirt"]));
 tileList.registerTile(new Tile("stone", tileTextures["stone"]));
 tileList.registerTile(new Tile("grass", tileTextures["grass"]));
 tileList.registerTile(new Tile("glass", tileTextures["glass"]));
-tileList.registerTile(new Tile("water", tileTextures["water"], false, true));
-tileList.registerTile(new Tile("water_stat", tileTextures["water"], false, false));
-tileList.registerTile(new Tile("lava", tileTextures["lava"], false, true));
-tileList.registerTile(new Tile("lava_stat", tileTextures["lava"], false, false));
+tileList.registerTile(new Tile("water", tileTextures["water"], false, true, true));
+tileList.registerTile(new Tile("water_stat", tileTextures["water"], false, true, false));
+tileList.registerTile(new Tile("lava", tileTextures["lava"], false, true, true));
+tileList.registerTile(new Tile("lava_stat", tileTextures["lava"], false, true, false));
 
