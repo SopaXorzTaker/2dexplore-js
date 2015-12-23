@@ -22,9 +22,13 @@ function populate(){
 	for (var x = 0; x < this.getTiles().width; x++){
 		for (var y = 0; y < this.getTiles().height; y++){
 			 if (y == 8){
-				this.getTiles().setTile(x, y, TILE_GRASS);
+				this.getTiles().setTile(x, y, Math.floor(Math.random()*64)==32?TILE_WATER:TILE_GRASS);
 			} else if (y > 7){
-				this.getTiles().setTile(x, y, Math.random()>0.5?TILE_DIRT:TILE_STONE);
+				if (Math.floor(Math.random()*128) == 64) {
+					this.getTiles().setTile(x, y, Math.random()>0.5?TILE_WATER:TILE_LAVA);
+				} else {
+					this.getTiles().setTile(x, y, Math.random()>0.5?TILE_DIRT:TILE_STONE);
+				}
 			}
 		}
 	}
