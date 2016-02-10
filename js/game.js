@@ -11,148 +11,10 @@ var hasTouchScreen = "ontouchstart" in window || navigator.maxTouchPoints;
 var currentTile = 0;
 var removeMode = false;
 
-function TouchButton(touchstart, touchend, render, tick){
-  this.x = 0;
-  this.y = 0;
-  this.width = 48;
-  this.height = 48;
-  this.down = false;
-
-  this.touchstart = touchstart.bind(this);
-  this.touchend = touchend.bind(this);
-  this.render = render.bind(this);
-  this.tick = tick ? tick.bind(this) : function() {};
-}
-
-function movementButton(direction){
-  var that = new TouchButton(
-    // touchstart
-    function() {
-      this.down = true;
-      move(this.direction);
-      this.cooldown = 1;
-    },
-    // touchend
-    function() { this.down = false; },
-    // render
-    function(ctx) {
-      var arrow = [];
-      ctx.beginPath();
-      switch (this.direction) {
-        case 0:
-          this.x = 15 + 48;
-          this.y = canvas.height - 15 - 48 * 3;
-          ctx.moveTo(this.x + 24, this.y + 8);
-          ctx.lineTo(this.x + 40, this.y + 40);
-          ctx.lineTo(this.x + 8, this.y + 40);
-          ctx.lineTo(this.x + 24, this.y + 8);
-          break;
-        case 1:
-          this.x = 15;
-          this.y = canvas.height - 15 - 48 * 2;
-          ctx.moveTo(this.x + 8, this.y + 24);
-          ctx.lineTo(this.x + 40, this.y + 40);
-          ctx.lineTo(this.x + 40, this.y + 8);
-          ctx.lineTo(this.x + 8, this.y + 24);
-          break;
-        case 2:
-          this.x = 15 + 48;
-          this.y = canvas.height - 15 - 48;
-          ctx.moveTo(this.x + 24, this.y + 40);
-          ctx.lineTo(this.x + 40, this.y + 8);
-          ctx.lineTo(this.x + 8, this.y + 8);
-          ctx.lineTo(this.x + 24, this.y + 40);
-          break;
-        case 3:
-          this.x = 15 + 48 * 2;
-          this.y = canvas.height - 15 - 48 * 2;
-          ctx.moveTo(this.x + 40, this.y + 24);
-          ctx.lineTo(this.x + 8, this.y + 40);
-          ctx.lineTo(this.x + 8, this.y + 8);
-          ctx.lineTo(this.x + 40, this.y + 24);
-          break;
-      }
-      ctx.fillStyle = "rgba(255, 255, 255, " + (this.down ? 1 : 0.2) + ")";
-      ctx.fill();
-
-      if (this.down) {
-        ctx.fillStyle = "rgba(255, 255, 255, " + (0.5 - this.cooldown) + ")";
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-      }
-    },
-    // tick
-    function() {
-      if (this.down) {
-        if (this.cooldown > 0) {
-          this.cooldown -= 0.5;
-        } else {
-          move(this.direction);
-        }
-      }
-    }
-  );
-  that.direction = direction;
-  that.cooldown = 0;
-  return that;
-}
-
-var touchButtons = {
-  "up": movementButton(0),
-  "left": movementButton(1),
-  "down": movementButton(2),
-  "right": movementButton(3),
-  "mode": new TouchButton(
-    // touchstart
-    function() { this.down = true; removeMode = !removeMode; },
-    // touchend
-    function() { this.down = false; },
-    // render
-    function(ctx) {
-      this.x = canvas.width / 2 - 24;
-      this.y = 20;
-      ctx.fillStyle = "rgba(0, 0, 0, " + (this.down ? 1 : 0.5) + ")";
-      ctx.fillRect(this.x, this.y, 48, 48);
-      ctx.drawImage(tileTextures.grass, this.x + 8, this.y + 8);
-      if (removeMode) {
-        ctx.strokeStyle = "#e22";
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.moveTo(this.x + 8, this.y + 8);
-        ctx.lineTo(this.x + 40, this.y + 40);
-        ctx.moveTo(this.x + 40, this.y + 8);
-        ctx.lineTo(this.x + 8, this.y + 40);
-        ctx.stroke();
-      }
-    }
-  ),
-  "newworld": new TouchButton(
-    // touchstart
-    function() { this.down = true; newWorld(); },
-    // touchend
-    function() { this.down = false; },
-    // render
-    function(ctx) {
-      this.x = canvas.width / 2 + 24;
-      this.y = 20;
-      ctx.fillStyle = "rgba(0, 0, 0, " + (this.down ? 1 : 0.5) + ")";
-      ctx.fillRect(this.x, this.y, 48, 48);
-      ctx.drawImage(tileTextures.grass, this.x + 8, this.y + 8);
-      ctx.fillStyle = "#ee2";
-      ctx.beginPath();
-      ctx.moveTo(this.x + 42 - 5, this.y + 18 - 15);
-      ctx.lineTo(this.x + 42 - 6, this.y + 18 - 15);
-      ctx.lineTo(this.x + 42 - 2, this.y + 18 - 9);
-      ctx.lineTo(this.x + 42 + 5, this.y + 18 - 6);
-      ctx.lineTo(this.x + 42 - 2, this.y + 18 - 2);
-      ctx.lineTo(this.x + 42 - 5, this.y + 18 + 5);
-      ctx.lineTo(this.x + 42 - 9, this.y + 18 - 2);
-      ctx.lineTo(this.x + 42 - 15, this.y + 18 - 5);
-      ctx.lineTo(this.x + 42 - 9, this.y + 18 - 9);
-      ctx.lineTo(this.x + 42 - 5, this.y + 18 - 15);
-      ctx.fill();
-    }
-  )
-};
+var touchButtons = {};
+// 0: no, 1: yes, >1: cooldown from COOLDOWN to 1
+var isMoving = {0: 0, 1: 0, 2: 0, 3: 0};
+var COOLDOWN = 3; // ticks to wait before moving
 
 function newWorld(){
 	world = new World(WORLD_X, WORLD_Y, tileList, populate);
@@ -249,11 +111,11 @@ function scrollMap(){
 function tick(){
 	world.tick();
 	scrollMap();
-  if (hasTouchScreen) {
-    for (var k in touchButtons) {
-      var button = touchButtons[k];
-      button.tick();
-    }
+  for (var i in isMoving) {
+    if (isMoving[i] == 1)
+      move(Number(i));
+    else if (isMoving[i] > 1)
+      isMoving[i]--;
   }
 }
 
@@ -309,20 +171,9 @@ function drawDebug(){
 		worldRenderer.getViewportX() + ", " + worldRenderer.getViewportY() + " Player position: " + world.player.getX() + ", " + world.player.getY(), 0, 16);
 }
 
-function drawButtons(){
-  var ctx = canvas.getContext("2d");
-  for (var k in touchButtons){
-    var button = touchButtons[k];
-    button.render(ctx);
-  }
-}
-
 function render(){
 	worldRenderer.redraw(); // draw the map
 	drawDebug();
-  if (hasTouchScreen){
-    drawButtons();
-  }
 }
 
 function keydown(evt){
@@ -380,45 +231,17 @@ function touchstart(evt){
     var x = evt.touches[i].clientX;
     var y = evt.touches[i].clientY;
 
-    var hitbutton = false;
-    for (var k in touchButtons) {
-      var button = touchButtons[k];
-      if (x >= button.x && x < button.x + button.width && y >= button.y && y < button.y + button.height) {
-        button.touchstart();
-        hitbutton = true;
-      }
-    }
+    var tileX = Math.floor((worldRenderer.getViewportX() + x) / TEXTURE_SIZE);
+  	var tileY = Math.floor((worldRenderer.getViewportY() + y) / TEXTURE_SIZE);
 
-    if (!hitbutton) {
-      var tileX = Math.floor((worldRenderer.getViewportX() + x) / TEXTURE_SIZE);
-    	var tileY = Math.floor((worldRenderer.getViewportY() + y) / TEXTURE_SIZE);
-
-      if (removeMode) {
-        world.getTiles().setTile(tileX, tileY, 0);
-      } else {
-        if (world.getTiles().getTile(tileX, tileY) == 0){
-  				world.getTiles().setTile(tileX, tileY, currentTile);
-  			}
-      }
+    if (removeMode) {
+      world.getTiles().setTile(tileX, tileY, 0);
+    } else {
+      if (world.getTiles().getTile(tileX, tileY) == 0){
+				world.getTiles().setTile(tileX, tileY, currentTile);
+			}
     }
   }
-
-  evt.preventDefault();
-}
-
-function touchend(evt){
-  for (var i = 0; i < evt.changedTouches.length; i++) {
-    var x = evt.changedTouches[i].clientX;
-    var y = evt.changedTouches[i].clientY;
-
-    for (var k in touchButtons) {
-      var button = touchButtons[k];
-      if (x >= button.x && x < button.x + button.width && y >= button.y && y < button.y + button.height) {
-        button.touchend();
-      }
-    }
-  }
-
   evt.preventDefault();
 }
 
@@ -430,14 +253,68 @@ function resize(evt){
 function onLoad(){
 	canvas = document.getElementById("gameCanvas");
 	document.body.addEventListener("keydown", keydown);
-	canvas.addEventListener("mousedown", click);
+
   if (hasTouchScreen) {
     document.body.classList.add("touch");
-    canvas.addEventListener("touchstart", touchstart);
-    canvas.addEventListener("touchend", touchend);
+    var buttons = document.getElementsByClassName("touchButton");
+    for (var i = 0; i < buttons.length; i++)
+      touchButtons[buttons[i].id] = buttons[i];
+
+    touchButtons.removeMode.addEventListener("touchstart", function(evt) {
+      removeMode = !removeMode;
+      touchButtons.removeMode.getElementsByTagName("img")[0].src =
+        (removeMode ? "textures/remove.png" : "textures/put.png");
+      evt.stopPropagation();
+    });
+
+    touchButtons.newWorld.addEventListener("touchstart", function(evt) {
+      newWorld();
+      evt.stopPropagation();
+    });
+
+    touchButtons.moveUp.addEventListener("touchstart", function(evt) {
+      move(0);
+      isMoving[0] = COOLDOWN;
+      evt.stopPropagation();
+    });
+    touchButtons.moveUp.addEventListener("touchend", function(evt) {
+      isMoving[0] = 0;
+    });
+
+    touchButtons.moveLeft.addEventListener("touchstart", function(evt) {
+      move(1);
+      isMoving[1] = COOLDOWN;
+      evt.stopPropagation();
+    });
+    touchButtons.moveLeft.addEventListener("touchend", function(evt) {
+      isMoving[1] = 0;
+    });
+
+    touchButtons.moveDown.addEventListener("touchstart", function(evt) {
+      move(2);
+      isMoving[2] = COOLDOWN;
+      evt.stopPropagation();
+    });
+    touchButtons.moveDown.addEventListener("touchend", function(evt) {
+      isMoving[2] = 0;
+    });
+
+    touchButtons.moveRight.addEventListener("touchstart", function(evt) {
+      move(3);
+      isMoving[3] = COOLDOWN;
+      evt.stopPropagation();
+    });
+    touchButtons.moveRight.addEventListener("touchend", function(evt) {
+      isMoving[3] = 0;
+    });
+
     window.addEventListener("resize", resize);
+    document.getElementById("gameOverlay").addEventListener("touchstart", touchstart);
     resize();
+  } else {
+    canvas.addEventListener("mousedown", click);
   }
+
 	canvas.addEventListener("contextmenu", function(evt){evt.preventDefault();});
 	window.onbeforeunload = beforeUnload;
 	initGame();
