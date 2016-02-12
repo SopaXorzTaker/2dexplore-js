@@ -176,6 +176,10 @@ function render(){
 	drawDebug();
 }
 
+function changeTile(){
+	currentTile = (currentTile + 1) % tileList.length();
+}
+
 function keydown(evt){
 	switch(evt.which){
 		case 87: // W
@@ -195,7 +199,7 @@ function keydown(evt){
 			currentTile = currentTile>=0?currentTile:tileList.length()-1;
 			break;
 		case 90:
-			currentTile = (currentTile + 1) % tileList.length();
+			changeTile();
 			break;
 		case 81:
 			newWorld();
@@ -269,6 +273,11 @@ function onLoad(){
 
     touchButtons.newWorld.addEventListener("touchstart", function(evt) {
       newWorld();
+      evt.stopPropagation();
+    });
+
+    touchButtons.changeTile.addEventListener("touchstart", function(evt) {
+      changeTile();
       evt.stopPropagation();
     });
 
