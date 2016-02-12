@@ -232,18 +232,21 @@ function click(evt){
 
 function touchstart(evt){
   for (var i = 0; i < evt.touches.length; i++) {
-    var x = evt.touches[i].clientX;
-    var y = evt.touches[i].clientY;
+    var rect = canvas.getBoundingClientRect();
+    var x = evt.touches[i].clientX - rect.left;
+    var y = evt.touches[i].clientY - rect.top;
 
     var tileX = Math.floor((worldRenderer.getViewportX() + x) / TEXTURE_SIZE);
-  	var tileY = Math.floor((worldRenderer.getViewportY() + y) / TEXTURE_SIZE);
+    var tileY = Math.floor((worldRenderer.getViewportY() + y) / TEXTURE_SIZE);
+
+    console.log("Touch detected: x,y,tx,ty,vx,vy", x, y, tileX, tileY, worldRenderer.getViewportX(), worldRenderer.getViewportY());
 
     if (removeMode) {
       world.getTiles().setTile(tileX, tileY, 0);
     } else {
       if (world.getTiles().getTile(tileX, tileY) == 0){
 				world.getTiles().setTile(tileX, tileY, currentTile);
-			}
+      }
     }
   }
   evt.preventDefault();
