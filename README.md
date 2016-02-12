@@ -19,3 +19,6 @@ Credits
 -------
 
 The game is written by SopaXorzTaker, textures are Copyright © 2015 Viktor Ahlstrom. [See copyright](https://github.com/SopaXorzTaker/2dexplore-js/blob/master/textures/COPYRIGHT)
+
+Touch UI credits @nucular
+Third-party modified textures of the texture-pack: `put.png` `remove.png` `newworld.png` `change.png`
