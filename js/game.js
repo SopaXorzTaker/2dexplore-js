@@ -21,7 +21,28 @@ function newWorld() {
 function populate() {
 	for (var x = 0; x < this.getTiles().width; x++) {
 		for (var y = 0; y < this.getTiles().height; y++) {
-			 if (y == 8) {
+			if (y == 7 && x % 9 == 0 && Math.floor(Math.random()*8) == 4) {
+				for (var y2 = y; y2 > 4; y2--) {
+					this.getTiles().setTile(x, y2, TILE_LOG);
+				}
+
+				for (; y2 < 6; y2++) {
+					for (var x2 = x-2; x2 < x+3; x2++) {
+						if (x2 != x) {
+							this.getTiles().setTile(x2, y2, TILE_LEAVES);
+						}
+					}
+				}
+
+				this.getTiles().setTile(x, y2-2, TILE_LEAVES);
+				this.getTiles().setTile(x, y2-4, TILE_LEAVES);
+
+				for (x2 = x-1; x2 < x+2; x2++) {
+					this.getTiles().setTile(x2, y2-3, TILE_LEAVES);
+				}
+
+
+			} else if (y == 8) {
 				this.getTiles().setTile(x, y, Math.floor(Math.random()*64)==32?TILE_WATER:TILE_GRASS);
 			} else if (y > 7) {
 				if (Math.floor(Math.random()*128) == 64) {

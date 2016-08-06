@@ -9,6 +9,9 @@ const TILE_WATER = 5;
 const TILE_WATER_STAT = 6;
 const TILE_LAVA = 7;
 const TILE_LAVA_STAT = 8;
+const TILE_LOG = 9;
+const TILE_LEAVES = 10;
+
 
 var tileList = new TileList(TEXTURE_SIZE);
 
@@ -21,4 +24,5 @@ tileList.registerTile(new Tile("water", tileTextures["water"], false, true, true
 tileList.registerTile(new Tile("water_stat", tileTextures["water"], false, true, false));
 tileList.registerTile(new Tile("lava", tileTextures["lava"], false, true, true));
 tileList.registerTile(new Tile("lava_stat", tileTextures["lava"], false, true, false));
-
+tileList.registerTile(new Tile("log", tileTextures["log"]));
+tileList.registerTile(new Tile("leaves", tileTextures["leaves"]));
