@@ -9,21 +9,21 @@ var hasStorage = (window.localStorage !== null)
 
 var currentTile = 0;
 
-function newWorld(){
+function newWorld() {
 	world = new World(WORLD_X, WORLD_Y, tileList, populate);
-	world.player.setTexture("player");
+	world.player.setTexture("player", 3);
 	world.player.setX(0);
 	world.player.setY(0);
 
 	worldRenderer = new WorldRenderer(world, canvas, tileList, entityTextures, TEXTURE_SIZE);
 }
 
-function populate(){
-	for (var x = 0; x < this.getTiles().width; x++){
-		for (var y = 0; y < this.getTiles().height; y++){
-			 if (y == 8){
+function populate() {
+	for (var x = 0; x < this.getTiles().width; x++) {
+		for (var y = 0; y < this.getTiles().height; y++) {
+			 if (y == 8) {
 				this.getTiles().setTile(x, y, Math.floor(Math.random()*64)==32?TILE_WATER:TILE_GRASS);
-			} else if (y > 7){
+			} else if (y > 7) {
 				if (Math.floor(Math.random()*128) == 64) {
 					this.getTiles().setTile(x, y, Math.random()>0.5?TILE_WATER:TILE_LAVA);
 				} else {
@@ -34,16 +34,16 @@ function populate(){
 	}
 }
 
-function initGame(){
-	setInterval(function(){render();}, 1000.0/30.0); // 30 FPS
-	setInterval(function(){tick();}, 1000.0/5.0); // ticks 20 times per second
+function initGame() {
+	setInterval(function() {render();}, 1000.0/30.0); // 30 FPS
+	setInterval(function() {tick();}, 1000.0/5.0); // ticks 20 times per second
 }
 
-function checkBounds(x, min, max){
+function checkBounds(x, min, max) {
 	return ((x >= min) && (x < max));
 }
 
-function move(direction){
+function move(direction) {
 	var player = world.getPlayer();
 	var x = player.getX();
 	var y = player.getY();
@@ -54,27 +54,31 @@ function move(direction){
 
 	player.setFacing(direction);
 
-	switch(direction){
+	switch(direction) {
 		case 0:
+			player.setTextureFrame(0);
 			y -= TEXTURE_SIZE;
 			break;
 		case 1:
-			player.setTexture("player_flipped");
-			x -= TEXTURE_SIZE;
+			player.setTexture("player_flipped", 3);
+			player.nextTextureFrame();
+			x -= TEXTURE_SIZE/8;
 			break;
 		case 2:
+			playes.setTextureFrame(0);
 			y += TEXTURE_SIZE;
 			break;
 		case 3:
-			player.setTexture("player");
-			x += TEXTURE_SIZE;
+			player.setTexture("player", 3);
+			player.nextTextureFrame();
+			x += TEXTURE_SIZE/8;
 			break;
 	}
 
-	if (world.getTiles().checkBounds(Math.floor(x/TEXTURE_SIZE), Math.floor(y/TEXTURE_SIZE))) {
-		var tile = world.getTiles().getTile(Math.floor(x/TEXTURE_SIZE), Math.floor(y/TEXTURE_SIZE));
-		if (!(tileList.getTile(tile).getOpaque())){
-			if ((direction == 0 && tileUnder != null && tileList.getTile(tileUnder).getOpaque()) || direction != 0){
+	if (world.getTiles().checkBounds(Math.ceil(x/TEXTURE_SIZE), Math.ceil(y/TEXTURE_SIZE))) {
+		var tile = world.getTiles().getTile(Math.ceil(x/TEXTURE_SIZE), Math.ceil(y/TEXTURE_SIZE));
+		if (!(tileList.getTile(tile).getOpaque())) {
+			if ((direction == 0 && tileUnder != null && tileList.getTile(tileUnder).getOpaque()) || direction != 0) {
 				player.setX(x);
 				player.setY(y);
 			}
@@ -83,31 +87,31 @@ function move(direction){
 	}
 }
 
-function scrollMap(){
+function scrollMap() {
 	var player = world.getPlayer();
 	var x = player.getX();
 	var y = player.getY();
 
-	if (y <= worldRenderer.getViewportY()){
+	if (y <= worldRenderer.getViewportY()) {
 		worldRenderer.setViewportY(y - (2 * TEXTURE_SIZE));
 	} else if (y >= (worldRenderer.getViewportY() + canvas.height - TEXTURE_SIZE)) {
 		worldRenderer.setViewportY((worldRenderer.getViewportY() + (y - worldRenderer.getViewportY())) - (2 * TEXTURE_SIZE));
 	}
 
-	if (x < worldRenderer.getViewportX()){
+	if (x < worldRenderer.getViewportX()) {
 		worldRenderer.setViewportX(x);
 	} else if (x >= (worldRenderer.getViewportX() + canvas.width - TEXTURE_SIZE)) {
 		worldRenderer.setViewportX(worldRenderer.getViewportX() + (x - worldRenderer.getViewportX()));
 	}
 }
 
-function tick(){
+function tick() {
 	world.tick();
 	scrollMap();
 }
 
-function save(){
-	if (hasStorage){
+function save() {
+	if (hasStorage) {
 		var player = world.getPlayer();
 		var tiles = world.getTiles();
 
@@ -126,8 +130,8 @@ function save(){
 
 }
 
-function load(){
-	if (hasStorage){
+function load() {
+	if (hasStorage) {
 			var json = localStorage.getItem("save");
 			if (json) {
 				var obj = JSON.parse(json);
@@ -144,11 +148,11 @@ function load(){
 	}
 }
 
-function hasSavedGame(){
+function hasSavedGame() {
 	return hasStorage && (localStorage.getItem("save") != null);
 }
 
-function drawDebug(){
+function drawDebug() {
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "#000000";
 	ctx.fillRect(0, 0, canvas.width, 24);
@@ -158,13 +162,13 @@ function drawDebug(){
 		worldRenderer.getViewportX() + ", " + worldRenderer.getViewportY() + " Player position: " + world.player.getX() + ", " + world.player.getY(), 0, 16);
 }
 
-function render(){
+function render() {
 	worldRenderer.redraw(); // draw the map
 	drawDebug();
 }
 
-function keydown(evt){
-	switch(evt.which){
+function keydown(evt) {
+	switch(evt.which) {
 		case 87: // W
 			move(0);
 			break;
@@ -191,7 +195,7 @@ function keydown(evt){
 	}
 }
 
-function click(evt){
+function click(evt) {
 	var rect = canvas.getBoundingClientRect();
 	var x = evt.clientX - rect.left;
 	var y = evt.clientY - rect.top;
@@ -199,9 +203,9 @@ function click(evt){
 	var tileX = Math.floor((worldRenderer.getViewportX() + x) / TEXTURE_SIZE);
 	var tileY = Math.floor((worldRenderer.getViewportY() + y) / TEXTURE_SIZE);
 
-	switch(evt.which){
+	switch(evt.which) {
 		case 1:
-			if (world.getTiles().getTile(tileX, tileY) == 0){
+			if (world.getTiles().getTile(tileX, tileY) == 0) {
 				world.getTiles().setTile(tileX, tileY, currentTile);
 			}
 			break;
@@ -213,20 +217,20 @@ function click(evt){
 	//return false;
 }
 
-function onLoad(){
+function onLoad() {
 	canvas = document.getElementById("gameCanvas");
 	document.body.addEventListener("keydown", keydown);
 	canvas.addEventListener("mousedown", click);
-	canvas.addEventListener("contextmenu", function(evt){evt.preventDefault();});
+	canvas.addEventListener("contextmenu", function(evt) {evt.preventDefault();});
 	window.onbeforeunload = beforeUnload;
 	initGame();
-	if (!hasSavedGame()){
+	if (!hasSavedGame()) {
 		newWorld();
 	} else {
 		load();
 	}
 }
 
-function beforeUnload(){
+function beforeUnload() {
 	save();
 }
