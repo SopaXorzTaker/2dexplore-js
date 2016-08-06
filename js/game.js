@@ -47,13 +47,13 @@ function move(direction){
 	var player = world.getPlayer();
 	var x = player.getX();
 	var y = player.getY();
-	
+
 	var tileUnderX = Math.floor(x/TEXTURE_SIZE);
 	var tileUnderY = Math.floor(y/TEXTURE_SIZE) + 1;
 	var tileUnder = world.getTiles().checkBounds(tileUnderX, tileUnderY)?world.getTiles().getTile(tileUnderX, tileUnderY):null;
-	
+
 	player.setFacing(direction);
-	
+
 	switch(direction){
 		case 0:
 			y -= TEXTURE_SIZE;
@@ -70,7 +70,7 @@ function move(direction){
 			x += TEXTURE_SIZE;
 			break;
 	}
-	
+
 	if (world.getTiles().checkBounds(Math.floor(x/TEXTURE_SIZE), Math.floor(y/TEXTURE_SIZE))) {
 		var tile = world.getTiles().getTile(Math.floor(x/TEXTURE_SIZE), Math.floor(y/TEXTURE_SIZE));
 		if (!(tileList.getTile(tile).getOpaque())){
@@ -87,13 +87,13 @@ function scrollMap(){
 	var player = world.getPlayer();
 	var x = player.getX();
 	var y = player.getY();
-	
+
 	if (y <= worldRenderer.getViewportY()){
 		worldRenderer.setViewportY(y - (2 * TEXTURE_SIZE));
 	} else if (y >= (worldRenderer.getViewportY() + canvas.height - TEXTURE_SIZE)) {
 		worldRenderer.setViewportY((worldRenderer.getViewportY() + (y - worldRenderer.getViewportY())) - (2 * TEXTURE_SIZE));
 	}
-	
+
 	if (x < worldRenderer.getViewportX()){
 		worldRenderer.setViewportX(x);
 	} else if (x >= (worldRenderer.getViewportX() + canvas.width - TEXTURE_SIZE)) {
@@ -110,7 +110,7 @@ function save(){
 	if (hasStorage){
 		var player = world.getPlayer();
 		var tiles = world.getTiles();
-		
+
 		var obj = {
 			"playerPos": [player.x, player.y],
 			"tiles": {
@@ -119,11 +119,11 @@ function save(){
 					"height": tiles.getHeight()
 			}
 		};
-		
+
 		localStorage.setItem("save", JSON.stringify(obj))
-		
+
 	}
-	
+
 }
 
 function load(){
@@ -187,7 +187,7 @@ function keydown(evt){
 		case 81:
 			newWorld();
 			break;
-			
+
 	}
 }
 
@@ -195,10 +195,10 @@ function click(evt){
 	var rect = canvas.getBoundingClientRect();
 	var x = evt.clientX - rect.left;
 	var y = evt.clientY - rect.top;
-	
+
 	var tileX = Math.floor((worldRenderer.getViewportX() + x) / TEXTURE_SIZE);
 	var tileY = Math.floor((worldRenderer.getViewportY() + y) / TEXTURE_SIZE);
-	
+
 	switch(evt.which){
 		case 1:
 			if (world.getTiles().getTile(tileX, tileY) == 0){

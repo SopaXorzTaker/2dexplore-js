@@ -9,10 +9,10 @@ for texture in textures:
 	#	print "Skipping %s" % texture
 	if texture.endswith(".png"):
 		data = open(texture, "rb").read()
-		
+
 		output = open(texture + ".txt", "w")
 		output.write("data:image/png;base64," + base64.b64encode(data))
 		output.flush()
 		output.close()
-		
+
 raw_input()
