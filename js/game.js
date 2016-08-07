@@ -69,11 +69,16 @@ function move(direction) {
 	var x = player.getX();
 	var y = player.getY();
 
+	var checkTileX, checkTileY;
+
 	var tileUnderX = Math.floor(x/TEXTURE_SIZE);
 	var tileUnderY = Math.floor(y/TEXTURE_SIZE) + 1;
 	var tileUnder = world.getTiles().checkBounds(tileUnderX, tileUnderY)?world.getTiles().getTile(tileUnderX, tileUnderY):null;
 
 	player.setFacing(direction);
+
+	checkTileX = Math.ceil(x / TEXTURE_SIZE);
+	checkTileY = Math.ceil(y / TEXTURE_SIZE);
 
 	switch(direction) {
 		case 0:
@@ -84,6 +89,7 @@ function move(direction) {
 			player.setTexture("player_flipped", 3);
 			player.nextTextureFrame();
 			x -= TEXTURE_SIZE/8;
+			checkTileX = Math.floor(x / TEXTURE_SIZE);
 			break;
 		case 2:
 			playes.setTextureFrame(0);
@@ -93,11 +99,13 @@ function move(direction) {
 			player.setTexture("player", 3);
 			player.nextTextureFrame();
 			x += TEXTURE_SIZE/8;
+			checkTileX = Math.ceil(x / TEXTURE_SIZE);
 			break;
 	}
 
-	if (world.getTiles().checkBounds(Math.ceil(x/TEXTURE_SIZE), Math.ceil(y/TEXTURE_SIZE))) {
-		var tile = world.getTiles().getTile(Math.ceil(x/TEXTURE_SIZE), Math.ceil(y/TEXTURE_SIZE));
+
+	if (world.getTiles().checkBounds(checkTileX, checkTileY)) {
+		var tile = world.getTiles().getTile(checkTileX, checkTileY);
 		if (!(tileList.getTile(tile).getOpaque())) {
 			if ((direction == 0 && tileUnder != null && tileList.getTile(tileUnder).getOpaque()) || direction != 0) {
 				player.setX(x);

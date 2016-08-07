@@ -40,7 +40,7 @@ GenericEntity.prototype.tick = function() {
 	var x = this.x;
 	var y = this.y;
 	var textureSize = this.world.getTileList().getTextureSize();
-	var tileX = Math.floor(x / textureSize);
+	var tileX = Math.floor((x + textureSize / 2) / textureSize);
 	var tileY = Math.floor(y / textureSize);
 	tileY++; // tile underneath
 	if (this.world.getTiles().checkBounds(tileX, tileY)) {
