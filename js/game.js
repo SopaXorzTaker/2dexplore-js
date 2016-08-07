@@ -230,6 +230,10 @@ function click(evt) {
 				world.getTiles().setTile(tileX, tileY, currentTile);
 			}
 			break;
+
+		case 2:
+			currentTile = world.getTiles().getTile(tileX, tileY);
+			break;
 		case 3:
 			world.getTiles().setTile(tileX, tileY, 0);
 			break;

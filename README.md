@@ -13,6 +13,7 @@ Use keys `W`, `A`, `S`, `D` to move the player.
 
 Mouse: left-click on a empty space to set a tile in it (the default tile is air, so try using `X` before.)
 Right-clicking a tile will clean it.
+Middle-click will sample the tile clicked.
 
 
 Credits
