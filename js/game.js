@@ -57,7 +57,7 @@ function populate() {
 
 function initGame() {
 	setInterval(function() {render();}, 1000.0/30.0); // 30 FPS
-	setInterval(function() {tick();}, 1000.0/5.0); // ticks 20 times per second
+	setInterval(function() {tick();}, 1000.0/5.0); // ticks 5 times per second
 }
 
 function checkBounds(x, min, max) {
