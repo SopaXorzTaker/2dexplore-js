@@ -77,8 +77,8 @@ function move(direction) {
 
 	player.setFacing(direction);
 
-	checkTileX = Math.ceil(x / TEXTURE_SIZE);
-	checkTileY = Math.ceil(y / TEXTURE_SIZE);
+	checkTileX = Math.floor(x / TEXTURE_SIZE);
+	checkTileY = Math.floor(y / TEXTURE_SIZE);
 
 	switch(direction) {
 		case 0:
@@ -89,7 +89,6 @@ function move(direction) {
 			player.setTexture("player_flipped", 3);
 			player.nextTextureFrame();
 			x -= TEXTURE_SIZE/8;
-			checkTileX = Math.floor(x / TEXTURE_SIZE);
 			break;
 		case 2:
 			playes.setTextureFrame(0);
