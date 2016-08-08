@@ -146,6 +146,15 @@ World.prototype.fillLiquid = function(x, y, type) {
 	}
 }
 
+World.prototype.falldown = function(x, y, tileId) {
+	var tiles = this.getTiles();
+	var tileList = this.getTileList();
+
+	if (tiles.checkBounds(x, y+1) && !tileList.getTile(tiles.getTile(x, y+1)).getOpaque() && Math.floor(Math.random()*8) == 4) {
+		tiles.setTile(x, y+1, tileId);
+		tiles.setTile(x, y, 0);
+	}
+}
 
 World.prototype.tick = function() {
 	var tiles = this.getTiles();
@@ -157,9 +166,13 @@ World.prototype.tick = function() {
 
 	for (var x = 0; x < tiles.getWidth(); x++) {
 		for (var y = 0; y < tiles.getHeight(); y++) {
-			tileId = tiles.getTile(x, y);
-			if (this.getTileList().getTile(tileId).getLiquid()) {
+			var tileId = tiles.getTile(x, y);
+			var tileType = this.getTileList().getTile(tileId);
+
+			if (tileType.getLiquid()) {
 					this.fillLiquid(x, y, tileId);
+			} else if (tileType.getFalldown()) {
+					this.falldown(x, y, tileId);
 			}
 		}
 	}
@@ -243,12 +256,13 @@ WorldRenderer.prototype.redraw = function() {
 	}, this);
 };
 
-Tile = function(name, texture, isOpaque, isLiquid, liquidFlowing) {
+Tile = function(name, texture, isOpaque, isLiquid, liquidFlowing, falldown) {
 	this.name = name;
 	this.texture = texture;
 	this.isOpaque = isOpaque!=null?isOpaque:true;
 	this.isLiquid = isLiquid!=null?isLiquid:false;
 	this.liquidFlowing = liquidFlowing!=null?liquidFlowing:false;
+	this.falldown = falldown!=null?falldown:false;
 };
 
 Tile.prototype.getName = function() {
@@ -269,6 +283,10 @@ Tile.prototype.getLiquid = function() {
 
 Tile.prototype.getFlowing = function() {
 	return this.liquidFlowing;
+};
+
+Tile.prototype.getFalldown = function() {
+	return this.falldown;
 };
 
 TileList = function(textureSize) {

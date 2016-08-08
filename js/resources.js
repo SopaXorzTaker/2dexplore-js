@@ -14,6 +14,7 @@ var tileTextures = {
 	"lava": loadImage("textures/lava.png"),
 	"log": loadImage("textures/log.png"),
 	"leaves": loadImage("textures/leaves.png"),
+	"sand": loadImage("textures/sand.png"),
 };
 
 var entityTextures = {
