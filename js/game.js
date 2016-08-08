@@ -8,6 +8,8 @@ var canvas;
 var hasStorage = (window.localStorage !== null)
 
 var currentTile = 0;
+var debugMode = false;
+
 
 function newWorld() {
 	world = new World(WORLD_X, WORLD_Y, tileList, populate);
@@ -56,8 +58,8 @@ function populate() {
 }
 
 function initGame() {
-	setInterval(function() {render();}, 1000.0/30.0); // 30 FPS
-	setInterval(function() {tick();}, 1000.0/5.0); // ticks 5 times per second
+	setInterval(function() {render(debugMode);}, 1000.0/30.0); // 30 FPS
+	setInterval(function() {tick(debugMode);}, 1000.0/5.0); // ticks 5 times per second
 }
 
 function checkBounds(x, min, max) {
@@ -91,7 +93,7 @@ function move(direction) {
 			x -= TEXTURE_SIZE/8;
 			break;
 		case 2:
-			playes.setTextureFrame(0);
+			player.setTextureFrame(0);
 			y += TEXTURE_SIZE;
 			break;
 		case 3:
@@ -103,10 +105,10 @@ function move(direction) {
 	}
 
 
-	if (world.getTiles().checkBounds(checkTileX, checkTileY)) {
+	if (world.getTiles().checkBounds(checkTileX, checkTileY) || debugMode) {
 		var tile = world.getTiles().getTile(checkTileX, checkTileY);
-		if (!(tileList.getTile(tile).getOpaque())) {
-			if ((direction == 0 && tileUnder != null && tileList.getTile(tileUnder).getOpaque()) || direction != 0) {
+		if (!tileList.getTile(tile).getOpaque() || debugMode) {
+			if ((direction == 0 && tileList.getTile(tileUnder).getOpaque()) || direction != 0 || debugMode) {
 				player.setX(x);
 				player.setY(y);
 			}
@@ -121,7 +123,8 @@ function scrollMap() {
 	var y = player.getY();
 
 	if (y <= worldRenderer.getViewportY()) {
-		worldRenderer.setViewportY(y - (2 * TEXTURE_SIZE));
+		if (y - (2 * TEXTURE_SIZE) > 0)
+			worldRenderer.setViewportY(y - (2 * TEXTURE_SIZE));
 	} else if (y >= (worldRenderer.getViewportY() + canvas.height - TEXTURE_SIZE)) {
 		worldRenderer.setViewportY((worldRenderer.getViewportY() + (y - worldRenderer.getViewportY())) - (2 * TEXTURE_SIZE));
 	}
@@ -133,8 +136,8 @@ function scrollMap() {
 	}
 }
 
-function tick() {
-	world.tick();
+function tick(debugMode) {
+	world.tick(debugMode);
 	scrollMap();
 }
 
@@ -187,11 +190,11 @@ function drawDebug() {
 	ctx.fillStyle = "#ffffff";
 	ctx.font = "14px Tahoma";
 	ctx.fillText("Current Tile: " + tileList.getTile(currentTile).getName() + " Viewport: " +
-		worldRenderer.getViewportX() + ", " + worldRenderer.getViewportY() + " Player position: " + world.player.getX() + ", " + world.player.getY(), 0, 16);
+		worldRenderer.getViewportX() + ", " + worldRenderer.getViewportY() + " Player position: " + world.player.getX() + ", " + world.player.getY() + (debugMode?" (Debug mode)":""), 0, 16);
 }
 
-function render() {
-	worldRenderer.redraw(); // draw the map
+function render(debugMode) {
+	worldRenderer.redraw(debugMode); // draw the map
 	drawDebug();
 }
 
@@ -209,15 +212,18 @@ function keydown(evt) {
 		case 68: // D
 			move(3);
 			break;
-		case 88:
+		case 88: // X
 			currentTile--;
 			currentTile = currentTile>=0?currentTile:tileList.length()-1;
 			break;
-		case 90:
+		case 90: // Z
 			currentTile = (currentTile + 1) % tileList.length();
 			break;
-		case 81:
+		case 81: // Q
 			newWorld();
+			break;
+		case 48: // 0
+			debugMode = !debugMode;
 			break;
 
 	}

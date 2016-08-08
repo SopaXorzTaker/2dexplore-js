@@ -5,7 +5,7 @@ Entity = function(world) {
 };
 
 Entity.prototype.textureName = null;
-Entity.prototype.tick = function() {};
+Entity.prototype.tick = function(debugMode) {};
 
 Entity.prototype.getX = function() {
 	return this.x;
@@ -36,14 +36,16 @@ GenericEntity = function(world) {
 };
 
 GenericEntity.prototype = new Entity();
-GenericEntity.prototype.tick = function() {
+GenericEntity.prototype.tick = function(debugMode) {
 	var x = this.x;
 	var y = this.y;
 	var textureSize = this.world.getTileList().getTextureSize();
 	var tileX = Math.floor((x + textureSize / 2) / textureSize);
 	var tileY = Math.floor(y / textureSize);
 	tileY++; // tile underneath
-	if (this.world.getTiles().checkBounds(tileX, tileY)) {
+
+	// prevent the player from falling down if he's in the debug mode.
+	if (this.world.getTiles().checkBounds(tileX, tileY) && !debugMode) {
 		var tileUnder = this.world.getTileList().getTile(this.world.getTiles().getTile(tileX, tileY));
 		if (!tileUnder.getOpaque()) {
 			this.y += textureSize;
@@ -156,12 +158,14 @@ World.prototype.falldown = function(x, y, tileId) {
 	}
 }
 
-World.prototype.tick = function() {
+World.prototype.tick = function(debugMode) {
 	var tiles = this.getTiles();
 
+	this._debugMode = debugMode;
+
 	this.entities.forEach(function(entity, i, array) {
-		entity.tick();
-	});
+		entity.tick(this._debugMode);
+	}, this);
 
 
 	for (var x = 0; x < tiles.getWidth(); x++) {
@@ -227,7 +231,7 @@ WorldRenderer.prototype.setViewportY = function(viewportY) {
 	this.viewportY = viewportY;
 };
 
-WorldRenderer.prototype.redraw = function() {
+WorldRenderer.prototype.redraw = function(debugMode) {
 	var areaX = Math.floor(this.viewportX / this.textureSize);
 	var areaY = Math.floor(this.viewportY / this.textureSize);
 	var areaEndX = areaX + Math.floor(this.canvas.width / this.textureSize);
@@ -238,7 +242,9 @@ WorldRenderer.prototype.redraw = function() {
 
 	var ctx = this.canvas.getContext("2d");
 
-	ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	if (!debugMode)
+		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
 	for (var x = areaX; x < areaEndX; x++) {
 		for (var y = areaY; y < areaEndY; y++) {
 			if (tileMap.checkBounds(x, y)) {
