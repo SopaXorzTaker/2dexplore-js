@@ -262,13 +262,12 @@ WorldRenderer.prototype.redraw = function(debugMode) {
 	}, this);
 };
 
-Tile = function(name, texture, isOpaque, isLiquid, liquidFlowing, falldown) {
+Tile = function(name, texture, isOpaque, isLiquid, liquidFlowing) {
 	this.name = name;
 	this.texture = texture;
 	this.isOpaque = isOpaque!=null?isOpaque:true;
 	this.isLiquid = isLiquid!=null?isLiquid:false;
 	this.liquidFlowing = liquidFlowing!=null?liquidFlowing:false;
-	this.falldown = falldown!=null?falldown:false;
 };
 
 Tile.prototype.getName = function() {
@@ -292,7 +291,7 @@ Tile.prototype.getFlowing = function() {
 };
 
 Tile.prototype.getFalldown = function() {
-	return this.falldown;
+	return this.getOpaque() && this.getFlowing();
 };
 
 TileList = function(textureSize) {

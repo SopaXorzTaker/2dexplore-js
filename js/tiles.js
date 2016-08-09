@@ -26,4 +26,4 @@ tileList.registerTile(new Tile("lava", tileTextures["lava"], false, true, true))
 tileList.registerTile(new Tile("lava_stat", tileTextures["lava"], false, true, false));
 tileList.registerTile(new Tile("log", tileTextures["log"]));
 tileList.registerTile(new Tile("leaves", tileTextures["leaves"]));
-tileList.registerTile(new Tile("sand", tileTextures["sand"], true, false, false, true));
+tileList.registerTile(new Tile("sand", tileTextures["sand"], true, false, true));
